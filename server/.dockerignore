@@ -1,0 +1,25 @@
+.DS_Store
+.git
+
+# Django
+*.sqlite3
+
+
+# Python
+__pycache__
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*env
+
+# ENV
+.env
+.venv
+env/
+venv/
