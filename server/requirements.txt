@@ -3,3 +3,4 @@ Django
 gunicorn==20.0.4
 Pillow==8.0.1
 django-heroku==0.3.1
+python-dotenv==0.19.0

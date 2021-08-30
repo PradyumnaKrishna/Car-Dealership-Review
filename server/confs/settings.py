@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 import django_heroku
 
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -129,3 +131,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 django_heroku.settings(locals())
+
+NLU_API_ENDPOINT = os.getenv("NLU_API_ENDPOINT")
+NLU_API_KEY = os.getenv("NLU_API_KEY")
+CF_API_ENDPOINT = os.getenv("CF_API_ENDPOINT")

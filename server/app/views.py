@@ -1,7 +1,10 @@
+from django.conf import settings
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.http import Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
+
+from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, post_request
 
 
 def index(request):
@@ -72,3 +75,45 @@ def logout_view(request):
     """ user logout view """
     logout(request)
     return redirect('app:index')
+
+
+def get_dealerships(request):
+    if request.method == "GET":
+        url = f"{settings.CF_API_ENDPOINT}/dealership"
+        # Get dealers from the URL
+        dealerships = get_dealers_from_cf(url)
+        # Concat all dealer's short name
+        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
+        # Return a list of dealer short name
+        return HttpResponse(dealer_names)
+
+
+def get_dealer_details(request, dealer_id):
+    if request.method == "GET":
+        url = f"{settings.CF_API_ENDPOINT}/review"
+
+        reviews = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+
+        review_names = ' '.join([review.sentiment for review in reviews])
+        return HttpResponse(review_names)
+
+
+def add_review(request, dealer_id):
+    if request.user.is_authenticated and request.method == "POST":
+        url = f"{settings.CF_API_ENDPOINT}/review"
+        review = dict()
+        review["id"] = request.POST("id")
+        review["time"] = request.POST("time")
+        review["name"] = request.POST("name")
+        review["dealership"] = dealer_id
+        review["review"] = request.POST("review")
+        review["purchase"] = request.POST("purchase")
+        review["purchase_date"] = request.POST("purchase_date")
+        review["car_make"] = request.POST("car_make")
+        review["car_model"] = request.POST("car_model")
+        review["car_year"] = request.POST("car_year")
+
+        json_payload = {review: review}
+        response = post_request(url, json_payload)
+
+        return HttpResponse(str(response))
