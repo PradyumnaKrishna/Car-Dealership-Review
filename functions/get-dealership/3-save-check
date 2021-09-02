@@ -1,0 +1,10 @@
+import sys
+
+
+def main(dict):
+
+    if not dict["ok"]:
+        return {"error": {"status": 500,
+                            "msg": "Something went wrong on the server"}}
+
+    return {"result": dict}
