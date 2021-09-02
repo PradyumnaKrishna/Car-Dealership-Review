@@ -1,0 +1,32 @@
+{% extends "app/base.html" %}
+
+{% block title %} Dealership Review {% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if review_list %}
+        <div class="card-deck">
+            {% for review in review_list %}
+                <div class="card" style="max-width: 18rem;">
+                    {% load static %}
+                    {% with 'img/emoji/'|add:review.sentiment|add:'.png' as image_static %}
+                        <img class="card-img-left" src="{% static image_static %}" alt="sentiment" width="15%">
+                    {% endwith %}
+
+                    <div class="card-body bg-light">
+                        <h5 class="card-title">{{ review.car_model }}, {{ review.car_make }} {{ review.car_year }}</h5>
+                    <p class="card-text">{{ review.review }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No reviews are available.</p>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <div class="container text-right py-3">
+            <a class="btn btn-primary" href="{% url 'app:add_review' dealer_id %}">Add Review</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

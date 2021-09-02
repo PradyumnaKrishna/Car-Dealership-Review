@@ -2,5 +2,47 @@
 
 {% block title %} Dealership Review {% endblock %}
 
+{% block headers %}
+    <!-- additional headers -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+{% endblock %}
+
 {% block content %}
+<table class="table" id="table" data-filter-control="true">
+    <thead>
+        <tr>
+            <th> ID </th>
+            <th> Dealer name </th>
+            <th> City </th>
+            <th> Address </th>
+            <th> Zip </th>
+            <th data-field="state" data-filter-control="select">State</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dealer in dealership_list %}
+            <tr>
+                <th scope="row"> {{dealer.id}}</th>
+                <td><a href="{% url 'app:dealer_details' dealer.id %}">{{dealer.full_name}}</a></td>
+                <td> {{dealer.city}}</td>
+                <td> {{dealer.address}}</td>
+                <td> {{dealer.zip}}</td>
+                <td> {{dealer.st}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block customjs %}
+<script>
+  $(function() {
+    $('#table').bootstrapTable()
+  })
+</script>
 {% endblock %}

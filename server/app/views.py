@@ -5,7 +5,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect, HttpResponse
 
 from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf, post_request
-
+from .models import CarModel
 
 def index(request):
     """ index view """
@@ -80,40 +80,53 @@ def logout_view(request):
 def get_dealerships(request):
     if request.method == "GET":
         url = f"{settings.CF_API_ENDPOINT}/dealership"
-        # Get dealers from the URL
-        dealerships = get_dealers_from_cf(url)
-        # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
-        # Return a list of dealer short name
-        return HttpResponse(dealer_names)
+
+        context = dict()
+        context["dealership_list"] = get_dealers_from_cf(url)
+
+        return render(request, 'app/index.html', context)
 
 
 def get_dealer_details(request, dealer_id):
     if request.method == "GET":
         url = f"{settings.CF_API_ENDPOINT}/review"
 
-        reviews = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+        context = dict()
+        context["review_list"] = get_dealer_reviews_from_cf(url, dealerId=dealer_id)
+        context["dealer_id"] = dealer_id
 
-        review_names = ' '.join([review.sentiment for review in reviews])
-        return HttpResponse(review_names)
+        return render(request, 'app/dealer_details.html', context)
 
 
 def add_review(request, dealer_id):
-    if request.user.is_authenticated and request.method == "POST":
-        url = f"{settings.CF_API_ENDPOINT}/review"
-        review = dict()
-        review["id"] = request.POST("id")
-        review["time"] = request.POST("time")
-        review["name"] = request.POST("name")
-        review["dealership"] = dealer_id
-        review["review"] = request.POST("review")
-        review["purchase"] = request.POST("purchase")
-        review["purchase_date"] = request.POST("purchase_date")
-        review["car_make"] = request.POST("car_make")
-        review["car_model"] = request.POST("car_model")
-        review["car_year"] = request.POST("car_year")
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            url = f"{settings.CF_API_ENDPOINT}/review"
+            car = CarModel.objects.get(id=request.POST.get('car'))
 
-        json_payload = {review: review}
-        response = post_request(url, json_payload)
+            review = dict()
+            review["dealership"] = dealer_id
+            review["review"] = request.POST["review"]
+            review["purchase"] = True if request.POST["purchase"] is "on" else False
+            review["purchase_date"] = request.POST["purchase_date"]
+            review["id"] = request.user.id
+            review["name"] = request.user.username
+            review["car_make"] = car.make.name
+            review["car_model"] = car.name
+            review["car_year"] = car.year.year
 
-        return HttpResponse(str(response))
+            json_payload = dict()
+            json_payload["review"] = review
+            json = post_request(url, json_payload)
+            print(json)
+
+            return redirect('app:dealer_details', dealer_id)
+
+        if request.method == "GET":
+            context = dict()
+            context["cars"] = CarModel.objects.filter(dealer_id=dealer_id)
+            context["dealer_id"] = dealer_id
+
+            return render(request, 'app/add_review.html', context)
+
+    return redirect('app:index')
